@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN calories_per_100g numeric NULL;

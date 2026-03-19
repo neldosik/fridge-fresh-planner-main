@@ -1,0 +1,7 @@
+project_id = "eliwmtdhytmtvuexuutb"
+
+[functions.scan-receipt]
+verify_jwt = false
+
+[functions.generate-recipes]
+verify_jwt = false
