@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ScanLine, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +39,12 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
   const [confirmLoading, setConfirmLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (open) {
+      setLocation(defaultLocation);
+    }
+  }, [open, defaultLocation]);
+
   const queryClient = useQueryClient();
 
   const resetForm = () => {
@@ -75,10 +81,13 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
     setLoading(false);
     if (!error) {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      // If we added something that matches shopping list items, mark them as bought.
       await markShoppingItemsAsBoughtByProducts([{ name: name.trim(), quantity: qty, unit }]);
       resetForm();
       onClose();
+    } else {
+      // Выводим ошибку в консоль и показываем уведомление пользователю
+      console.error("Ошибка добавления в Supabase:", error);
+      toast.error(`Не удалось добавить: ${error.message}`);
     }
   };
 
