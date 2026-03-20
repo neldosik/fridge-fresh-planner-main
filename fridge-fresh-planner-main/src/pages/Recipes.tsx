@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "@/hooks/useTranslation";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHat, ShoppingBag, CalendarDays, Utensils, ArrowLeft, Layers } from "lucide-react";
@@ -37,6 +38,7 @@ export interface RecipeData {
 }
 
 const Recipes = () => {
+  const { t } = useTranslation();
   const [view, setView] = useState<ViewState>("choose-mode");
   const [mode, setMode] = useState<Mode>("fridge");
   const [timeframe, setTimeframe] = useState<Timeframe>("single");
@@ -208,9 +210,9 @@ const Recipes = () => {
     } catch (e: any) {
       console.error(e);
       if (e?.name === "AbortError") {
-        toast.error("Ошибка связи с шеф-поваром, попробуйте еще раз");
+        toast.error(t("rec_toast_err_ai") as string);
       } else {
-        toast.error(e?.message || "Не удалось сгенерировать рецепты");
+        toast.error(e?.message || (t("rec_toast_err_gen") as string));
       }
       setView("choose-mode");
     }
@@ -316,7 +318,7 @@ const Recipes = () => {
       .filter(Boolean) as RecipeData["ingredients"];
 
     if (missingIngredients.length === 0) {
-      toast.info("Все ингредиенты уже есть!");
+      toast.info(t("rec_toast_all_ings") as string);
       return;
     }
 
@@ -390,9 +392,9 @@ const Recipes = () => {
     }
 
     if (insertedCount + updatedCount > 0) {
-      toast.success(`Корзина обновлена: +${insertedCount} позиций, обновлено ${updatedCount}`);
+      toast.success(t("rec_toast_cart_updated", {insertedCount, updatedCount}) as string);
     } else {
-      toast.info("В корзине уже есть нужные ингредиенты");
+      toast.info(t("rec_toast_cart_has") as string);
     }
   };
 
@@ -453,7 +455,7 @@ const Recipes = () => {
       const newQty = Math.max(0, Number(found.quantity) - subtractInProductUnit);
       await supabase.from("products").update({ quantity: newQty }).eq("id", found.id);
     }
-    toast.success("Продукты списаны! Приятного аппетита! 🍽️");
+    toast.success(t("rec_toast_cooked") as string);
 
     try {
       const entry = {
@@ -488,8 +490,8 @@ const Recipes = () => {
       calories_total: recipe.calories_total,
       icon: recipe.icon,
     });
-    if (error) toast.error("Ошибка сохранения");
-    else toast.success("Рецепт сохранён!");
+    if (error) toast.error(t("rec_toast_save_err") as string);
+    else toast.success(t("rec_toast_saved") as string);
   };
 
   const goBack = () => {
@@ -519,7 +521,7 @@ const Recipes = () => {
                 <ArrowLeft size={20} />
               </button>
             )}
-            <h1 className="text-2xl font-bold tracking-tight">Рецепты</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("rec_title")}</h1>
           </div>
           <button
             onClick={() => setView("liked")}
@@ -547,9 +549,9 @@ const Recipes = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <ChefHat size={24} className="text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-card-foreground mb-1">Готовлю из того, что есть</h3>
-                <p className="text-sm text-muted-foreground">Рецепты на основе продуктов в вашем холодильнике</p>
-                <p className="text-xs text-primary font-medium mt-2">{inStockProducts.length} продуктов доступно</p>
+                <h3 className="text-lg font-bold text-card-foreground mb-1">{t("rec_mode_fridge_title")}</h3>
+                <p className="text-sm text-muted-foreground">{t("rec_mode_fridge_desc")}</p>
+                <p className="text-xs text-primary font-medium mt-2">{t("rec_products_avail", {count: inStockProducts.length})}</p>
               </button>
 
               <button
@@ -559,8 +561,8 @@ const Recipes = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <ShoppingBag size={24} className="text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-card-foreground mb-1">Хочу в магазин</h3>
-                <p className="text-sm text-muted-foreground">Поиск по всем мировым рецептам, недостающее — в корзину</p>
+                <h3 className="text-lg font-bold text-card-foreground mb-1">{t("rec_mode_shop_title")}</h3>
+                <p className="text-sm text-muted-foreground">{t("rec_mode_shop_desc")}</p>
               </button>
             </motion.div>
           )}
@@ -570,14 +572,14 @@ const Recipes = () => {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <span className="text-primary">✍️</span>
-                  Твои пожелания шеф-повару (например: еду в горы, хочу сытный завтрак)
+                  {t("rec_wishes_label")}
                 </label>
                 <textarea
                   value={chefWishes}
                   onChange={(e) => handleChefWishesChange(e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
-                  placeholder="Опиши пожелания: калорийность, продукты/ограничения, поход, цели и т.д."
+                  placeholder={t("rec_wishes_placeholder") as string}
                 />
               </div>
 
@@ -589,9 +591,9 @@ const Recipes = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold">Приготовить из залежавшегося</span>
+                    <span className="text-sm font-semibold">{t("rec_expiring_title")}</span>
                     <span className={`text-xs font-medium ${useExpiringOnly ? "text-primary" : "text-muted-foreground"}`}>
-                      {useExpiringOnly ? "включено" : "выключено"}
+                      {useExpiringOnly ? t("rec_on") : t("rec_off")}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -603,7 +605,7 @@ const Recipes = () => {
               {savedPlanTimeframe && (
                 <div className="p-3 rounded-xl border border-border bg-card/60">
                   <p className="text-xs text-muted-foreground">
-                    Есть сохраненный план: <span className="font-semibold text-card-foreground">{savedPlanTimeframe === "meal_prep" ? "Meal Prep" : "План на неделю"}</span>
+                    {t("rec_saved_plan")} <span className="font-semibold text-card-foreground">{savedPlanTimeframe === "meal_prep" ? "Meal Prep" : "План на неделю"}</span>
                   </p>
                   <div className="mt-2">
                     <button
@@ -628,8 +630,8 @@ const Recipes = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <Utensils size={24} className="text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-card-foreground mb-1">На один раз</h3>
-                <p className="text-sm text-muted-foreground">3 варианта рецептов на выбор</p>
+                <h3 className="text-lg font-bold text-card-foreground mb-1">{t("rec_single_title")}</h3>
+                <p className="text-sm text-muted-foreground">{t("rec_single_desc")}</p>
               </button>
 
               <button
@@ -639,8 +641,8 @@ const Recipes = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <CalendarDays size={24} className="text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-card-foreground mb-1">План на неделю</h3>
-                <p className="text-sm text-muted-foreground">21 рецепт: завтрак, обед и ужин на 7 дней</p>
+                <h3 className="text-lg font-bold text-card-foreground mb-1">{t("rec_weekly_title")}</h3>
+                <p className="text-sm text-muted-foreground">{t("rec_weekly_desc")}</p>
               </button>
 
               <button
@@ -650,8 +652,8 @@ const Recipes = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <Layers size={24} className="text-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-card-foreground mb-1">Meal Prep</h3>
-                <p className="text-sm text-muted-foreground">Сет на неделю: суп + второе + завтрак + перекус (7 порций каждого)</p>
+                <h3 className="text-lg font-bold text-card-foreground mb-1">{t("rec_mealprep_title")}</h3>
+                <p className="text-sm text-muted-foreground">{t("rec_mealprep_desc")}</p>
               </button>
             </motion.div>
           )}
@@ -659,14 +661,14 @@ const Recipes = () => {
           {view === "single-category" && (
             <motion.div key="single-cat" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="grid gap-3 pt-4">
               <p className="text-sm text-muted-foreground">
-                Выберите тип блюда, а ИИ предложит 3 варианта именно для этой категории.
+                {t("rec_cat_desc")}
               </p>
               {[
-                { key: "breakfast", label: "Завтрак" },
-                { key: "lunch", label: "Обед" },
-                { key: "dinner", label: "Ужин" },
-                { key: "snack", label: "Перекус" },
-                { key: "dessert", label: "Десерт" },
+                { key: "breakfast", label: t("cat_breakfast") },
+                { key: "lunch", label: t("cat_lunch") },
+                { key: "dinner", label: t("cat_dinner") },
+                { key: "snack", label: t("cat_snack") },
+                { key: "dessert", label: t("cat_dessert") },
               ].map((cat) => (
                 <button
                   key={cat.key}
@@ -677,7 +679,7 @@ const Recipes = () => {
                   className="bg-card border border-border rounded-2xl p-4 text-left shadow-card hover:shadow-soft transition-shadow flex items-center justify-between"
                 >
                   <span className="text-sm font-semibold text-card-foreground">{cat.label}</span>
-                  <span className="text-xs text-muted-foreground">3 идеи от шефа</span>
+                  <span className="text-xs text-muted-foreground">{t("rec_cat_ideas")}</span>
                 </button>
               ))}
             </motion.div>
@@ -686,8 +688,8 @@ const Recipes = () => {
           {view === "loading" && (
             <motion.div key="load" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20">
               <div className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-muted-foreground font-medium">ИИ готовит рецепты...</p>
-              <p className="text-xs text-muted-foreground mt-1">Это может занять до 2 минут</p>
+              <p className="text-muted-foreground font-medium">{t("rec_loading_ai")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("rec_loading_time")}</p>
             </motion.div>
           )}
 
@@ -712,9 +714,9 @@ const Recipes = () => {
 
           {view === "liked" && (
             <motion.div key="liked" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="pt-4 space-y-3">
-              <h2 className="text-lg font-bold">Мои лайки ❤️</h2>
+              <h2 className="text-lg font-bold">{t("rec_liked")}</h2>
               {likedTitles.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Вы ещё не отмечали любимые рецепты.</p>
+                <p className="text-sm text-muted-foreground">{t("rec_liked_empty")}</p>
               ) : (
                 <div className="grid gap-3">
                   {weeklyRecipes
@@ -742,7 +744,7 @@ const Recipes = () => {
           {view === "history" && (
             <motion.div key="history" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="pt-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-bold">История готовки</h2>
+                <h2 className="text-lg font-bold">{t("rec_history")}</h2>
                 <button
                   onClick={() => {
                     setCookHistory([]);
@@ -759,7 +761,7 @@ const Recipes = () => {
               </div>
 
               {cookHistory.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Пока нет приготовленных рецептов.</p>
+                <p className="text-sm text-muted-foreground">{t("rec_history_empty")}</p>
               ) : (
                 <div className="grid gap-3">
                   {cookHistory.map((h) => (

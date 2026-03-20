@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useSettings } from "@/hooks/useSettings";
 import { getCurrencySymbol } from "@/lib/utils";
 import { useMemo } from "react";
@@ -12,7 +13,6 @@ interface MealPrepSetsViewProps {
   onExtraConstraintsChange: (value: string) => void;
 }
 
-const SET_NAMES = ["Бюджетный Lidl Сет", "Витаминный Сет", "Комфортный Сет"];
 const SET_VIT_ICONS = ["🥦", "🥦🥦", "🥦🥦🥦"];
 
 function chunkIntoSets(recipes: RecipeData[]) {
@@ -41,15 +41,15 @@ function calcSetPrice(recipes: RecipeData[]) {
 }
 
 const MealPrepSetsView = ({ recipes, onSelectSet, onRerollSets, extraConstraints, onExtraConstraintsChange }: MealPrepSetsViewProps) => {
-  useSettings();
+  const { t } = useTranslation();
   const sets = useMemo(() => chunkIntoSets(recipes), [recipes]);
 
   return (
     <div className="pt-2 space-y-4">
       <div className="flex items-center justify-between mb-2 gap-3">
         <div>
-          <h2 className="text-lg font-bold">Сеты Meal Prep</h2>
-          <p className="text-xs text-muted-foreground">Обед и ужин — разные горячие блюда или сытные салаты, цены Lidl Munich</p>
+          <h2 className="text-lg font-bold">{t("mp_title")}</h2>
+          <p className="text-xs text-muted-foreground">{t("mp_desc")}</p>
         </div>
         <button
           onClick={onRerollSets}
@@ -74,13 +74,14 @@ const MealPrepSetsView = ({ recipes, onSelectSet, onRerollSets, extraConstraints
             }
           }}
           className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-          placeholder="Напишите сюда дополнительные пожелания к сету"
+          placeholder={t("mp_wishes_placeholder") as string}
         />
       </div>
 
       <div className="grid gap-3">
         {sets.map((setRecipes, i) => {
-          const name = SET_NAMES[i] || `Сет ${i + 1}`;
+          const SET_NAMES = [t("mp_set_budget"), t("mp_set_vitamin"), t("mp_set_comfort")];
+          const name = SET_NAMES[i] || t("mp_set_prefix", {num: i + 1});
           const vit = SET_VIT_ICONS[i] || "🥦🥦";
           const totalPrice = calcSetPrice(setRecipes);
 
@@ -104,18 +105,18 @@ const MealPrepSetsView = ({ recipes, onSelectSet, onRerollSets, extraConstraints
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Сет #{i + 1}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t("mp_set_prefix", {num: i + 1})}</p>
                   <h3 className="text-base font-bold text-card-foreground">{name}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">4 блюда на неделю</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t("mp_4_dishes")}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-xl" title="Иконка витаминной сбалансированности">
                     {vit}
                   </span>
                   <span className="text-sm font-bold text-primary">
-                    Примерно {totalPrice}{getCurrencySymbol()} 
+                    {t("mp_approx_price", {price: totalPrice + getCurrencySymbol()})} 
                   </span>
-                  <span className="text-[10px] text-muted-foreground">(на 7 дней для всех блюд)</span>
+                  <span className="text-[10px] text-muted-foreground">{t("mp_7_days_note")}</span>
                 </div>
               </div>
 

@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { motion } from "framer-motion";
 import { Refrigerator, Archive, Box } from "lucide-react";
 
@@ -19,6 +20,7 @@ interface TabSwitcherProps {
 }
 
 const TabSwitcher = ({ activeTab, onTabChange }: TabSwitcherProps) => {
+  const { t } = useTranslation();
   return (
     <div className="flex bg-secondary/50 p-1 rounded-2xl">
       {tabs.map((tab) => (
@@ -39,7 +41,7 @@ const TabSwitcher = ({ activeTab, onTabChange }: TabSwitcherProps) => {
             />
           )}
           <span className="relative z-10 flex items-center gap-2">
-            {tab.icon} {tab.label}
+            {tab.icon} {t(`tab_${tab.id}` as any)}
           </span>
         </button>
       ))}

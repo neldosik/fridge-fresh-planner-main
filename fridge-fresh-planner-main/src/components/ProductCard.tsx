@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ProductCardProps {
   id: string;
@@ -37,6 +38,7 @@ const formatQty = (val: number) => {
 };
 
 const ProductCard = ({ id, name, quantity, maxQuantity, unit, icon, expiryDate }: ProductCardProps) => {
+  const { t } = useTranslation();
   const freshness = getFreshness(expiryDate);
   const [localQty, setLocalQty] = useState(quantity);
   const [showDelete, setShowDelete] = useState(false);
@@ -151,7 +153,7 @@ const ProductCard = ({ id, name, quantity, maxQuantity, unit, icon, expiryDate }
 
         {expiryDate ? (
           <div className={`text-[11px] font-semibold mb-2 ${isExpired ? "text-red-600" : "text-muted-foreground"}`}>
-            Срок до: {new Date(expiryDate).toLocaleDateString()}
+            {t("card_expiry")} {new Date(expiryDate).toLocaleDateString()}
           </div>
         ) : null}
 

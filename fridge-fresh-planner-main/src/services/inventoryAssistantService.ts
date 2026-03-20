@@ -16,6 +16,9 @@ export interface InventoryAssistantRequest {
   activeLocation: InventoryLocation;
   products: InventoryProduct[];
   message: string;
+  fallbackErrorAi?: string;
+  fallbackUnknown?: string;
+  fallbackNotFound?: string;
 }
 
 type InventoryAssistantAction =
@@ -106,9 +109,10 @@ ${JSON.stringify(req.products)}
 - Понимай команды типа: "Ich habe keine Milch mehr" так же как "У меня нет/закончилась молочка".
 - Для ответа "сколько осталось" используй germanName в query (например Käse).
 
-Уверенность:
-- Для set/adjust/update действий выбирай ТОЛЬКО продукт из списка req.products и используй его существующий id.
-- Если ты НЕ уверен, какой именно продукт из списка подходит, не меняй ничего: intent="unknown", actions=[], replyText="Не понял, уточните название продукта (например: 'кефир', 'яйца').".
+Новые продукты и Уверенность:
+- Для изменения уже существующих запасов (set_quantity, adjust_quantity) выбирай ТОЛЬКО продукт из списка req.products.
+- ВАЖНО: Если пользователь просит ДОБАВИТЬ продукт (купил, добавь), которого ЕЩЕ НЕТ в списке req.products — обязательно используй действие insert_product и intent="update_inventory". Не возвращай unknown!
+- Если пользователь просит УМЕНЬШИТЬ продукт или узнать ОСТАТОК, которого нет в списке — возвращай intent="unknown", actions=[], replyText="${req.fallbackNotFound || 'Not found'}".
 - Никогда не запрашивай у пользователя дополнительную информацию текстом. Всегда возвращай JSON по схеме.
 
 Срок годности:
@@ -150,7 +154,7 @@ icon ТОЛЬКО из allowedIcons.`;
     return {
       intent: "unknown",
       actions: [],
-      replyText: "Я не смог понять команду. Попробуй ещё раз, например: «Я выпил молоко» или «Добавь 2 литра молока».",
+      replyText: req.fallbackErrorAi || "Error",
     };
   }
 
@@ -163,7 +167,7 @@ icon ТОЛЬКО из allowedIcons.`;
 
   const allowedIntentSet = new Set<InventoryAssistantResponse["intent"]>(["query_remaining", "update_inventory", "unknown"]);
   if (!allowedIntentSet.has(parsed.intent)) {
-    return { intent: "unknown", actions: [], replyText: "Я не смог понять команду." };
+    return { intent: "unknown", actions: [], replyText: req.fallbackUnknown || "Unknown" };
   }
 
   // Hard validation/guardrails: only apply actions that reference known product ids.

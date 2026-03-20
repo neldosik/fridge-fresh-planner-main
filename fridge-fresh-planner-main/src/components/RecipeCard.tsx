@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useSettings } from "@/hooks/useSettings";
 import { getCurrencySymbol } from "@/lib/utils";
 import { useState } from "react";
@@ -31,6 +32,7 @@ const RecipeCard = ({
   onToggleLike,
 }: RecipeCardProps) => {
   useSettings();
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [servings, setServings] = useState(recipe.servings);
   const multiplier = servings / recipe.servings;
@@ -109,14 +111,14 @@ const RecipeCard = ({
             {!compact && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{recipe.description}</p>}
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <button onClick={onReroll} className="p-2 rounded-full hover:bg-secondary transition-colors" title="Заменить">
+            <button onClick={onReroll} className="p-2 rounded-full hover:bg-secondary transition-colors" title={t("rc_replace") as string}>
               <RefreshCw size={16} className="text-muted-foreground" />
             </button>
             {onToggleLike && (
               <button
                 onClick={onToggleLike}
                 className="p-1.5 rounded-full hover:bg-secondary transition-colors"
-                title={liked ? "Убрать из любимых" : "В избранное"}
+                title={(liked ? t("rc_unlike") : t("rc_like")) as string}
               >
                 <Heart
                   size={16}
@@ -145,7 +147,7 @@ const RecipeCard = ({
         <div className="flex gap-2 mt-3">
           <button onClick={() => setExpanded(!expanded)} className="flex-1 py-2 rounded-xl bg-secondary text-card-foreground text-xs font-medium flex items-center justify-center gap-1 hover:bg-muted transition-colors">
             <ChevronDown size={14} className={`transition-transform ${expanded ? "rotate-180" : ""}`} />
-            {expanded ? "Свернуть" : "Подробнее"}
+            {expanded ? t("rc_collapse") : t("rc_details")}
           </button>
           {mode === "shop" && (
             <button onClick={onAddToCart} className="py-2 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1 hover:bg-primary/90 transition-colors">
@@ -157,7 +159,7 @@ const RecipeCard = ({
             <CookingPot size={14} />
             Готовлю!
           </button>
-          <button onClick={onSave} className="p-2 rounded-xl hover:bg-secondary transition-colors" title="Сохранить">
+          <button onClick={onSave} className="p-2 rounded-xl hover:bg-secondary transition-colors" title={t("rc_save") as string}>
             <Bookmark size={14} className="text-muted-foreground" />
           </button>
         </div>
@@ -173,7 +175,7 @@ const RecipeCard = ({
           >
             <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
               <div>
-                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Ингредиенты</h4>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("rc_ingredients")}</h4>
                 <div className="space-y-1.5">
                   {recipe.ingredients.map((ing, i) => {
                     const requiredQty = ing.quantity * multiplier;
@@ -203,12 +205,12 @@ const RecipeCard = ({
                           {Math.round(ing.quantity * multiplier * 10) / 10} {ing.unit}
                           {mode === "fridge" && matched && availableConverted !== null && (
                             <span className={`ml-2 ${hasEnough ? "text-card-foreground" : "text-destructive"}`}>
-                              есть ~{Math.round(availableConverted * 10) / 10} {ing.unit}
+                              {t("rc_have_approx", {qty: Math.round(availableConverted * 10) / 10, unit: ing.unit})}
                             </span>
                           )}
                           {mode === "fridge" && matched && availableConverted === null && (
                             <span className="ml-2 text-muted-foreground">
-                              есть ~{Math.round(availableRaw * 10) / 10} {matched.unit}
+                              {t("rc_have_approx", {qty: Math.round(availableRaw * 10) / 10, unit: matched.unit})}
                             </span>
                           )}
                           {ing.estimated_price_rub && mode === "shop" && matched && !hasAny && ing.estimated_price_rub > 0 && (
@@ -223,7 +225,7 @@ const RecipeCard = ({
                 </div>
                 {mode === "shop" && (
                   <div className="mt-2 pt-2 border-t border-border flex justify-between text-sm font-bold">
-                    <span className="text-card-foreground">Итого (Цены Lidl Munich)</span>
+                    <span className="text-card-foreground">{t("rc_total_lidl")}</span>
                     <span className="text-primary">
                       ~
                       {Math.round(
@@ -236,7 +238,7 @@ const RecipeCard = ({
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Приготовление</h4>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("rc_preparation")}</h4>
                 <ol className="space-y-2">
                   {recipe.steps.map((step, i) => (
                     <li key={i} className="flex gap-2 text-sm text-card-foreground">

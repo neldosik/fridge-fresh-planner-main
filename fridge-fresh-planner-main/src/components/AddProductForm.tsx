@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ScanLine, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "@/hooks/useTranslation";
 import { toast } from "sonner";
 import ScanConfirmList, { ScannedProduct } from "./ScanConfirmList";
 import { PRODUCT_ICONS } from "@/constants/productIcons";
@@ -211,8 +212,8 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
             {view === "scanning" && (
               <div className="flex flex-col items-center justify-center py-16 gap-4">
                 <Loader2 size={40} className="animate-spin text-primary" />
-                <p className="text-lg font-medium text-card-foreground">Анализирую чек...</p>
-                <p className="text-sm text-muted-foreground">ИИ распознаёт продукты</p>
+                <p className="text-lg font-medium text-card-foreground">{t("add_analyze")}</p>
+                <p className="text-sm text-muted-foreground">{t("add_ai_parsing")}</p>
               </div>
             )}
 
@@ -228,7 +229,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
             {view === "form" && (
               <>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-card-foreground">Новый продукт</h2>
+                  <h2 className="text-xl font-bold text-card-foreground">{t("add_new_product")}</h2>
                   <button onClick={handleClose} className="p-2 rounded-full hover:bg-secondary transition-colors">
                     <X size={20} className="text-muted-foreground" />
                   </button>
@@ -237,7 +238,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Icon picker */}
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">Иконка</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t("add_icon")}</label>
                     <div className="flex flex-wrap gap-2">
                       {ICONS.map((i) => (
                         <button
@@ -256,12 +257,12 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
 
                   {/* Name */}
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">Название</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t("add_name")}</label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Например, Молоко"
+                      placeholder={t("add_name_placeholder") as string}
                       className="w-full px-4 py-3 rounded-xl bg-secondary border-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       required
                     />
@@ -269,7 +270,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
 
                   {/* Location */}
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">Место хранения</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t("add_location")}</label>
                     <div className="flex gap-2">
                       {LOCATIONS.map((loc) => (
                         <button
@@ -291,7 +292,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
                   {/* Quantity + Unit */}
                   <div className="flex gap-3">
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-muted-foreground mb-2">Количество</label>
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">{t("add_qty")}</label>
                       <input
                         type="number"
                         value={quantity}
@@ -302,7 +303,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
                       />
                     </div>
                     <div className="w-28">
-                      <label className="block text-sm font-medium text-muted-foreground mb-2">Единица</label>
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">{t("add_unit")}</label>
                       <select
                         value={unit}
                         onChange={(e) => setUnit(e.target.value)}
@@ -321,7 +322,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
 
                   {/* Expiry date */}
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">Срок годности</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t("add_expiry")}</label>
                     <input
                       type="date"
                       value={expiryDate}
@@ -336,7 +337,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
                     className="w-full py-4 rounded-2xl bg-primary/10 text-primary font-semibold text-base flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors"
                   >
                     <Camera size={20} />
-                    Сканировать чек
+                    {t("add_scan_btn")}
                   </button>
 
                   <button
@@ -344,7 +345,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
                     disabled={loading || !name.trim()}
                     className="w-full py-4 rounded-2xl bg-foreground text-background font-semibold text-base disabled:opacity-50 transition-opacity"
                   >
-                    {loading ? "Добавляю..." : "Добавить"}
+                    {loading ? t("add_adding_btn") : t("add_submit")}
                   </button>
                 </form>
               </>

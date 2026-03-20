@@ -1,4 +1,4 @@
-import { useSettings } from "@/hooks/useSettings";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,7 @@ import { runInventoryAssistant } from "@/services/inventoryAssistantService";
 import { markShoppingItemsAsBoughtByProducts } from "@/services/shoppingListSyncService";
 
 const Index = () => {
-  useSettings();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("fridge");
   const [formOpen, setFormOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -404,7 +404,7 @@ const Index = () => {
 
           setChatMessages((prev) => [
             ...prev,
-            { role: "assistant", text: `Ок, обновил: ${prod.name} осталось ${approxQty(newQty)} ${prod.unit || ""}`.trim(), id: crypto.randomUUID() },
+            { role: "assistant", text: t("ast_updated_left", {name: prod.name, qty: approxQty(newQty), unit: prod.unit || ""}) as string, id: crypto.randomUUID() },
           ]);
           return true;
         }
@@ -432,7 +432,7 @@ const Index = () => {
               ...prev,
               {
                 role: "assistant",
-                text: `Уточните, какое именно «${entry.replyGerman}» вы использовали (например: «обычное», «без сахара», «высокой жирности»).`,
+                text: t("ast_specify", {name: entry.replyGerman}) as string,
                 id: crypto.randomUUID(),
               },
             ]);
@@ -461,7 +461,7 @@ const Index = () => {
             ...prev,
             {
               role: "assistant",
-              text: `Готово: обновил ваши запасы (${entry.replyGerman}).`,
+              text: t("ast_updated_stock", {name: entry.replyGerman}) as string,
               id: crypto.randomUUID(),
             },
           ]);
@@ -474,7 +474,7 @@ const Index = () => {
           ...prev,
           {
             role: "assistant",
-            text: `Не нашёл этот продукт среди ваших запасов. Напишите название так, как оно у вас в списке (например: «Яйца (Eier)», «Молоко (Milch)», «Авокадо»).`,
+            text: t("ast_not_found_list") as string,
             id: crypto.randomUUID(),
           },
         ]);
@@ -490,7 +490,7 @@ const Index = () => {
     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     try {
-      const res = await runInventoryAssistant({ activeLocation, products, message: text }, controller.signal);
+      const res = await runInventoryAssistant({ activeLocation, products, message: text, fallbackErrorAi: t("ast_err_ai") as string, fallbackUnknown: t("ast_err_unknown") as string, fallbackNotFound: t("ast_not_found") as string }, controller.signal);
 
       if (res.intent === "query_remaining") {
         const productId = res.query?.productId ?? null;
@@ -501,10 +501,10 @@ const Index = () => {
           const quantity = product.quantity;
           const unit = product.unit || "шт";
 
-          const reply = quantity <= 0 ? `Закончился (${germanName})` : `Осталось примерно ${approxQty(quantity)} ${unit} (${germanName})`;
+          const reply = quantity <= 0 ? t("ast_empty", {name: germanName}) as string : t("ast_left_approx", {qty: approxQty(quantity), unit, name: germanName}) as string;
           setChatMessages((prev) => [...prev, { role: "assistant", text: reply, id: crypto.randomUUID() }]);
         } else {
-          setChatMessages((prev) => [...prev, { role: "assistant", text: res.replyText || "Не нашёл этот продукт среди ваших запасов.", id: crypto.randomUUID() }]);
+          setChatMessages((prev) => [...prev, { role: "assistant", text: res.replyText || (t("ast_not_found") as string), id: crypto.randomUUID() }]);
         }
       } else {
         const touchedProductsForSync: { name: string; quantity: number; unit: string }[] = [];
@@ -562,15 +562,15 @@ const Index = () => {
 
         queryClient.invalidateQueries({ queryKey: ["products"] });
         await markShoppingItemsAsBoughtByProducts(touchedProductsForSync);
-        const reply = res.replyText || "Готово! Обновил ваши запасы.";
+        const reply = res.replyText || (t("ast_done") as string);
         setChatMessages((prev) => [...prev, { role: "assistant", text: reply, id: crypto.randomUUID() }]);
       }
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Ошибка ассистента");
+      toast.error(e?.message || (t("ast_err_toast") as string));
       setChatMessages((prev) => [
         ...prev,
-        { role: "assistant", text: "Ошибка связи с ассистентом. Попробуйте ещё раз.", id: crypto.randomUUID() },
+        { role: "assistant", text: t("ast_err_conn") as string, id: crypto.randomUUID() },
       ]);
     } finally {
       clearTimeout(timeoutId);
@@ -590,7 +590,7 @@ const Index = () => {
     const w = window as any;
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SR) {
-      toast.error("Web Speech API не поддерживается в этом браузере.");
+      toast.error(t("ast_err_mic") as string);
       return;
     }
 
@@ -660,7 +660,7 @@ const Index = () => {
           }
         `}</style>
         <div className="flex items-center justify-between gap-3 mb-4">
-          <h1 className="text-2xl font-bold tracking-tight">Продукты</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("idx_title")}</h1>
         </div>
 
         <div className="p-3 rounded-2xl border border-border bg-card/60 mb-4">
@@ -670,7 +670,7 @@ const Index = () => {
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="text-sm font-semibold text-card-foreground">Управление запасами ✨</div>
+                <div className="text-sm font-semibold text-card-foreground">{t("idx_inventory_title")}</div>
                 <button
                   type="button"
                   onClick={startOrStopMic}
@@ -680,7 +680,7 @@ const Index = () => {
                       : "bg-secondary hover:bg-muted border-border"
                   }`}
                 >
-                  {listening ? "Слушаю..." : "Микрофон"}
+                  {listening ? t("idx_listening") : t("idx_mic")}
                 </button>
               </div>
 
@@ -690,7 +690,7 @@ const Index = () => {
                   onChange={(e) => setChatInput(e.target.value)}
                   rows={2}
                   className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
-                  placeholder="Например: Я съел все яйца / Ich habe keine Milch mehr / Добавь 2 литра молока / Сколько осталось сыра?"
+                  placeholder={t("idx_chat_placeholder") as string}
                 />
                 <button
                   type="button"
@@ -723,7 +723,7 @@ const Index = () => {
                 <div className="mt-3 border border-border rounded-xl bg-background p-3 max-h-[160px] overflow-y-auto space-y-2">
                   {chatMessages.slice(-6).map((m) => (
                     <div key={m.id} className={`text-sm ${m.role === "assistant" ? "text-card-foreground" : "text-primary font-medium"}`}>
-                      <span className="opacity-60 mr-2">{m.role === "assistant" ? "Шеф:" : "Вы:"}</span>
+                      <span className="opacity-60 mr-2">{m.role === "assistant" ? t("idx_chef") : t("idx_you")}</span>
                       {m.text}
                     </div>
                   ))}
@@ -742,11 +742,11 @@ const Index = () => {
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-lg shrink-0">✨</span>
               <div className="min-w-0">
-                <h2 className="text-sm font-bold truncate">Мастхев продукты</h2>
-                <p className="text-[11px] text-muted-foreground truncate">Добавляются в корзину при необходимости</p>
+                <h2 className="text-sm font-bold truncate">{t("idx_musthave_title")}</h2>
+                <p className="text-[11px] text-muted-foreground truncate">{t("idx_musthave_subtitle")}</p>
               </div>
             </div>
-            <span className="text-[11px] text-primary whitespace-nowrap">{mustHaveExpanded ? "Скрыть" : "Показать"}</span>
+            <span className="text-[11px] text-primary whitespace-nowrap">{mustHaveExpanded ? t("idx_hide") : t("idx_show")}</span>
           </button>
 
           {mustHaveExpanded && (
@@ -764,10 +764,10 @@ const Index = () => {
 
                   const status =
                     !product || qty <= 0
-                      ? { label: "Нужно купить", tone: "text-red-600" }
+                      ? { label: t("idx_need_buy") as string, tone: "text-red-600" }
                       : qty <= def.lowQty
-                        ? { label: `Почти нет (${qty} ${def.unit})`, tone: "text-amber-600" }
-                        : { label: `Есть (${qty} ${def.unit})`, tone: "text-green-600" };
+                        ? { label: t("idx_running_low", {qty, unit: def.unit}) as string, tone: "text-amber-600" }
+                        : { label: t("idx_in_stock", {qty, unit: def.unit}) as string, tone: "text-green-600" };
 
                   return (
 
@@ -780,7 +780,7 @@ const Index = () => {
                         </div>
                       </div>
                       {inShopping ? (
-                        <span className="text-[11px] font-bold text-primary whitespace-nowrap">В корзине</span>
+                        <span className="text-[11px] font-bold text-primary whitespace-nowrap">{t("idx_in_cart")}</span>
                       ) : (
                         <span className="text-[11px] text-muted-foreground whitespace-nowrap">—</span>
                       )}
@@ -805,7 +805,7 @@ const Index = () => {
                   value={newMustHaveName} 
                   onChange={e => setNewMustHaveName(e.target.value)} 
                   className="flex-1 h-8 px-2 rounded-lg bg-background border border-border text-sm" 
-                  placeholder="Добавить (например: Яблоки)"
+                  placeholder={t("idx_add_placeholder") as string}
                   onKeyDown={e => e.key === 'Enter' && addMustHave()}
                 />
                 <button 
@@ -830,8 +830,8 @@ const Index = () => {
         ) : sorted.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <span className="text-5xl mb-4">🛒</span>
-            <p className="text-lg font-medium">Пора в магазин</p>
-            <p className="text-sm">Здесь пока пусто</p>
+            <p className="text-lg font-medium">{t("idx_time_to_shop")}</p>
+            <p className="text-sm">{t("idx_empty_here")}</p>
           </div>
         ) : (
           <div className="grid gap-3">

@@ -9,10 +9,12 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
-import { useTheme } from "@/components/ThemeProvider"; // Используем твой хук
+import { useTheme } from "@/components/ThemeProvider";
+import { useTranslation } from "@/hooks/useTranslation"; // Используем твой хук
 import { User, Settings as SettingsIcon, Globe, Banknote, LogOut, Trash2 } from "lucide-react";
 
 const Settings = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   
@@ -50,7 +52,7 @@ const Settings = () => {
         data: { display_name: displayName }
       });
       if (error) throw error;
-      toast.success("Имя профиля обновлено!");
+      toast.success(t("set_toast_saved") as string);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -64,25 +66,25 @@ const Settings = () => {
       if (error) throw error;
       navigate("/auth");
     } catch (error: any) {
-      toast.error("Ошибка при выходе");
+      toast.error(t("set_toast_logout_err") as string);
     }
   };
 
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
-      "ВНИМАНИЕ: Это действие нельзя отменить. Все ваши данные будут удалены. Вы уверены?"
+      t("set_delete_confirm") as string
     );
     if (confirmed) {
       // В Supabase удаление пользователя обычно делается через Edge Functions или в панели управления
-      toast.info("Запрос на удаление отправлен. Проверьте почту для подтверждения.");
+      toast.info(t("set_toast_delete") as string);
     }
   };
 
   return (
     <div className="min-h-screen bg-background pb-32">
       <header className="p-6 pt-10">
-        <h1 className="text-3xl font-bold tracking-tight">Настройки</h1>
-        <p className="text-muted-foreground text-sm">Управляйте своим профилем и приложением</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t("set_title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("set_desc")}</p>
       </header>
 
       <main className="px-4 space-y-6">
@@ -90,20 +92,20 @@ const Settings = () => {
         <Card className="border-border/50 shadow-sm">
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <User size={18} className="text-primary" />
-            <CardTitle className="text-lg">Ваш профиль</CardTitle>
+            <CardTitle className="text-lg">{t("set_profile")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Имя в приложении</Label>
+              <Label htmlFor="name">{t("set_name_label")}</Label>
               <Input 
                 id="name"
-                placeholder="Как вас называть?"
+                placeholder={t("set_name_placeholder") as string}
                 value={displayName} 
                 onChange={(e) => setDisplayName(e.target.value)} 
               />
             </div>
             <Button onClick={handleUpdateProfile} disabled={loading} className="w-full">
-              {loading ? "Сохранение..." : "Сохранить изменения"}
+              {loading ? t("set_saving") : t("set_save_btn")}
             </Button>
           </CardContent>
         </Card>
@@ -112,13 +114,13 @@ const Settings = () => {
         <Card className="border-border/50 shadow-sm">
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <SettingsIcon size={18} className="text-primary" />
-            <CardTitle className="text-lg">Внешний вид</CardTitle>
+            <CardTitle className="text-lg">{t("set_appearance")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-base">Темная тема</Label>
-                <p className="text-[12px] text-muted-foreground">Использовать ночной режим</p>
+                <Label className="text-base">{t("set_dark_mode")}</Label>
+                <p className="text-[12px] text-muted-foreground">{t("set_dark_mode_desc")}</p>
               </div>
               <Switch 
                 checked={theme === "dark"} 
@@ -129,11 +131,11 @@ const Settings = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Globe size={14} className="text-muted-foreground" />
-                <Label>Язык интерфейса</Label>
+                <Label>{t("set_lang")}</Label>
               </div>
               <Select value={language} onValueChange={setLanguage}>
                 <SelectTrigger className="w-full bg-background">
-                  <SelectValue placeholder="Выберите язык" />
+                  <SelectValue placeholder={t("set_lang_placeholder") as string} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ru">Русский</SelectItem>
@@ -146,11 +148,11 @@ const Settings = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Banknote size={14} className="text-muted-foreground" />
-                <Label>Валюта</Label>
+                <Label>{t("set_currency")}</Label>
               </div>
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger className="w-full bg-background">
-                  <SelectValue placeholder="Выберите валюту" />
+                  <SelectValue placeholder={t("set_currency_placeholder") as string} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="EUR">Euro (€)</SelectItem>
@@ -170,7 +172,7 @@ const Settings = () => {
             className="w-full flex items-center justify-center gap-2 border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-amber-900 dark:text-amber-500"
           >
             <LogOut size={16} />
-            Выйти из системы
+            {t("set_logout")}
           </Button>
           
           <Button 
@@ -179,7 +181,7 @@ const Settings = () => {
             className="w-full flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
           >
             <Trash2 size={16} />
-            Удалить аккаунт навсегда
+            {t("set_delete_account")}
           </Button>
         </div>
       </main>

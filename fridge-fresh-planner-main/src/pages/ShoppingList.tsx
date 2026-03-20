@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useSettings } from "@/hooks/useSettings";
 import { getCurrencySymbol } from "@/lib/utils";
 import { useState } from "react";
@@ -85,6 +86,7 @@ function classifyLidlCategory(itemName: string): LidlCartCategory {
 
 const ShoppingList = () => {
   useSettings();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
 
@@ -133,6 +135,14 @@ const ShoppingList = () => {
 
   const orderedCats: LidlCartCategory[] = ["Obst & Gemüse", "Kühlung", "Tiefkühlkost", "Sonstiges"];
 
+  
+  const catNames: Record<LidlCartCategory, string> = {
+    "Obst & Gemüse": t("sl_cat_obst") as string,
+    "Kühlung": t("sl_cat_kuhlung") as string,
+    "Tiefkühlkost": t("sl_cat_tiefkuehl") as string,
+    "Sonstiges": t("sl_cat_sonstiges") as string,
+  };
+
   const shareToWhatsApp = () => {
     const lines: string[] = [];
     let sum = 0;
@@ -142,7 +152,7 @@ const ShoppingList = () => {
     for (const cat of orderedCats) {
       const groupItems = groupedByCategory[cat] || [];
       if (!groupItems.length) continue;
-      lines.push(`*${cat}*`);
+      lines.push(`*${catNames[cat] || cat}*`);
       for (const item of groupItems) {
         const unitPrice = Math.max(0, item.estimated_price || 0);
         const total = unitPrice * item.quantity;
@@ -152,7 +162,7 @@ const ShoppingList = () => {
       lines.push("");
     }
 
-    lines.push(`Итого: ~${Math.round(sum)}${getCurrencySymbol()}`);
+    lines.push(t("sl_wa_total", {total: Math.round(sum), currency: getCurrencySymbol()}) as string);
     const text = encodeURIComponent(lines.join("\n"));
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
@@ -162,8 +172,8 @@ const ShoppingList = () => {
       <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md px-4 pt-6 pb-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Корзина</h1>
-            <p className="text-xs text-muted-foreground">Цены Lidl Munich (EUR)</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t("sl_title")}</h1>
+            <p className="text-xs text-muted-foreground">{t("sl_subtitle")}</p>
           </div>
           <div className="flex items-center gap-3">
             {totalPrice > 0 && <span className="text-sm font-bold text-primary">~{Math.round(totalPrice)}{getCurrencySymbol()}</span>}
@@ -186,8 +196,8 @@ const ShoppingList = () => {
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <ShoppingCart size={48} className="mb-4 opacity-40" />
-            <p className="text-lg font-medium">Корзина пуста</p>
-            <p className="text-sm">Добавьте рецепт в режиме «Хочу в магазин»</p>
+            <p className="text-lg font-medium">{t("sl_empty_title")}</p>
+            <p className="text-sm">{t("sl_empty_desc")}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -196,7 +206,7 @@ const ShoppingList = () => {
               if (!sourceItems.length) return null;
               return (
                 <div key={cat}>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{cat}</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{catNames[cat] || cat}</p>
                   <div className="grid gap-2">
                     {sourceItems.map((item) => (
                       <motion.div
@@ -235,7 +245,7 @@ const ShoppingList = () => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    Куплено ({checkedItems.length})
+                    {t("sl_bought")} ({checkedItems.length})
                   </p>
                   <button onClick={clearChecked} className="text-xs text-destructive font-medium hover:text-destructive/80 transition-colors">
                     Очистить
