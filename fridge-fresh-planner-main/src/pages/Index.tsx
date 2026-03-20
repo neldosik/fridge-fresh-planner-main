@@ -1,3 +1,4 @@
+import { useSettings } from "@/hooks/useSettings";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,11 +7,12 @@ import ProductCard from "@/components/ProductCard";
 import BottomNav from "@/components/BottomNav";
 import AddProductForm from "@/components/AddProductForm";
 import { toast } from "sonner";
-import { Mic, Send } from "lucide-react";
+import { Mic, Send, Trash2 } from "lucide-react";
 import { runInventoryAssistant } from "@/services/inventoryAssistantService";
 import { markShoppingItemsAsBoughtByProducts } from "@/services/shoppingListSyncService";
 
 const Index = () => {
+  useSettings();
   const [activeTab, setActiveTab] = useState("fridge");
   const [formOpen, setFormOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -36,12 +38,49 @@ const Index = () => {
 
   const normalizeForMatch = (name: string) => (name.split("(")[0] || name).trim().toLowerCase();
 
-  const MUST_HAVE = [
-    { key: "milk", match: ["молок"], name: "Молоко (Milch)", icon: "🥛", unit: "л", orderQty: 1, estimatedPricePerUnit: 1.15, lowQty: 1, expirySoonDays: 2 },
-    { key: "eggs", match: ["яйц"], name: "Яйца (Eier)", icon: "🥚", unit: "шт", orderQty: 10, estimatedPricePerUnit: 0.25, lowQty: 4, expirySoonDays: 2 },
-    { key: "cheese", match: ["сыр"], name: "Сыр (Käse)", icon: "🧀", unit: "г", orderQty: 200, estimatedPricePerUnit: 0.01, lowQty: 100, expirySoonDays: 2 },
-    { key: "bread", match: ["хлеб"], name: "Хлеб (Brot)", icon: "🍞", orderQty: 1, estimatedPricePerUnit: 1.5, lowQty: 1, expirySoonDays: 2 },
-  ] as const;
+  
+  const defaultMustHave = [
+    { key: "milk", name: "Молоко", icon: "🥛", unit: "л", lowQty: 1 },
+    { key: "eggs", name: "Яйца", icon: "🥚", unit: "шт", lowQty: 4 },
+    { key: "cheese", name: "Сыр", icon: "🧀", unit: "г", lowQty: 100 },
+    { key: "bread", name: "Хлеб", icon: "🍞", unit: "шт", lowQty: 1 },
+  ];
+
+  const [mustHaveList, setMustHaveList] = useState(() => {
+    const saved = localStorage.getItem("app_must_have");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return defaultMustHave;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("app_must_have", JSON.stringify(mustHaveList));
+  }, [mustHaveList]);
+
+  const removeMustHave = (key) => {
+    setMustHaveList(prev => prev.filter(item => item.key !== key));
+  };
+
+  const [newMustHaveName, setNewMustHaveName] = useState("");
+  const [newMustHaveIcon, setNewMustHaveIcon] = useState("🍽️");
+  
+  const addMustHave = () => {
+    if (!newMustHaveName.trim()) return;
+    const newItem = {
+      key: crypto.randomUUID(),
+      name: newMustHaveName.trim(),
+      icon: newMustHaveIcon,
+      unit: "шт",
+      lowQty: 1,
+    };
+    setMustHaveList(prev => [...prev, newItem]);
+    setNewMustHaveName("");
+    setNewMustHaveIcon("🍽️");
+  };
+
 
   const { data: activeShoppingItems = [] } = useQuery({
     queryKey: ["shopping_list_active_index"],
@@ -56,59 +95,7 @@ const Index = () => {
     },
   });
 
-  const pendingMustHaveRef = useRef<Set<string>>(new Set());
-
-  const ensureMustHaveInShoppingList = async () => {
-    if (!products.length) return;
-    const existing = new Set(activeShoppingItems.map((i: any) => normalizeForMatch(i.name || "")));
-
-    for (const def of MUST_HAVE) {
-      const product = products.find((p: any) => {
-        const base = normalizeForMatch(String(p?.name || ""));
-        return def.match.some((k) => base.includes(k));
-      });
-
-      const qty = product ? Number(product.quantity || 0) : 0;
-      const expiry = product?.expiry_date ? new Date(product.expiry_date).getTime() : null;
-      const daysLeft = expiry ? Math.ceil((expiry - Date.now()) / 86400000) : null;
-
-      const need =
-        !product || qty <= 0 || qty <= def.lowQty || (daysLeft !== null && daysLeft <= def.expirySoonDays);
-
-      if (!need) continue;
-
-      const normalizedShoppingName = normalizeForMatch(def.name);
-      const hasInList = existing.has(normalizedShoppingName);
-      if (hasInList) continue;
-
-      const pendingKey = `${def.key}:${normalizedShoppingName}`;
-      if (pendingMustHaveRef.current.has(pendingKey)) continue;
-      pendingMustHaveRef.current.add(pendingKey);
-
-      try {
-        await supabase.from("shopping_list").insert({
-          name: def.name,
-          quantity: def.orderQty,
-          unit: def.unit,
-          estimated_price: def.estimatedPricePerUnit,
-          icon: def.icon,
-          recipe_source: "Мастхев",
-          checked: false,
-        });
-      } catch {
-        // ignore insert errors; subsequent refresh will correct state
-      } finally {
-        pendingMustHaveRef.current.delete(pendingKey);
-      }
-    }
-  };
-
-  useEffect(() => {
-    // keep it simple: ensure must-have items whenever products or shopping list changes
-    void ensureMustHaveInShoppingList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, activeShoppingItems]);
-
+  
   // Cleanup: if the cart already has duplicates from previous sessions,
   // merge them by (name without German) + unit.
   useEffect(() => {
@@ -765,28 +752,25 @@ const Index = () => {
           {mustHaveExpanded && (
             <div className="mt-2 p-3 rounded-2xl border border-border bg-card/50">
               <div className="space-y-2">
-                {MUST_HAVE.map((def) => {
+                
+                {mustHaveList.map((def) => {
                   const product = products.find((p: any) => {
                     const base = normalizeForMatch(String(p?.name || ""));
-                    return def.match.some((k: string) => base.includes(k));
+                    return base.includes(normalizeForMatch(def.name)) || normalizeForMatch(def.name).includes(base);
                   });
 
                   const qty = product ? Number(product.quantity || 0) : 0;
-                  const expiry = product?.expiry_date ? new Date(product.expiry_date).getTime() : null;
-                  const daysLeft = expiry ? Math.ceil((expiry - Date.now()) / 86400000) : null;
-
                   const inShopping = activeShoppingItems.some((i: any) => normalizeForMatch(i?.name || "") === normalizeForMatch(def.name));
 
                   const status =
                     !product || qty <= 0
                       ? { label: "Нужно купить", tone: "text-red-600" }
-                      : daysLeft !== null && daysLeft <= def.expirySoonDays
-                        ? { label: `Скоро (${daysLeft} дн.)`, tone: "text-amber-600" }
-                        : qty <= def.lowQty
-                          ? { label: `Почти нет (${qty} ${product.unit || ""})`, tone: "text-amber-600" }
-                          : { label: `Есть (${qty} ${product.unit || ""})`, tone: "text-green-600" };
+                      : qty <= def.lowQty
+                        ? { label: `Почти нет (${qty} ${def.unit})`, tone: "text-amber-600" }
+                        : { label: `Есть (${qty} ${def.unit})`, tone: "text-green-600" };
 
                   return (
+
                     <div key={def.key} className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-lg shrink-0">{def.icon}</span>
@@ -800,9 +784,36 @@ const Index = () => {
                       ) : (
                         <span className="text-[11px] text-muted-foreground whitespace-nowrap">—</span>
                       )}
+                      <button onClick={() => removeMustHave(def.key)} className="p-1 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors ml-2 shrink-0">
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   );
                 })}
+              </div>
+              <div className="mt-4 pt-3 border-t border-border flex items-center gap-2">
+                <input 
+                  type="text" 
+                  value={newMustHaveIcon} 
+                  onChange={e => setNewMustHaveIcon(e.target.value)} 
+                  className="w-10 h-8 rounded-lg bg-background border border-border text-center text-sm" 
+                  maxLength={2}
+                  placeholder="🍽️"
+                />
+                <input 
+                  type="text" 
+                  value={newMustHaveName} 
+                  onChange={e => setNewMustHaveName(e.target.value)} 
+                  className="flex-1 h-8 px-2 rounded-lg bg-background border border-border text-sm" 
+                  placeholder="Добавить (например: Яблоки)"
+                  onKeyDown={e => e.key === 'Enter' && addMustHave()}
+                />
+                <button 
+                  onClick={addMustHave}
+                  className="px-3 h-8 rounded-lg bg-primary text-primary-foreground text-xs font-bold"
+                >
+                  Добавить
+                </button>
               </div>
             </div>
           )}

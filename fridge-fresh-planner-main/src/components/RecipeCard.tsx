@@ -1,3 +1,4 @@
+import { useSettings } from "@/hooks/useSettings";
 import { getCurrencySymbol } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,6 +30,7 @@ const RecipeCard = ({
   liked,
   onToggleLike,
 }: RecipeCardProps) => {
+  useSettings();
   const [expanded, setExpanded] = useState(false);
   const [servings, setServings] = useState(recipe.servings);
   const multiplier = servings / recipe.servings;

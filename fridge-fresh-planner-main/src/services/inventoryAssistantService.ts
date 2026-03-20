@@ -134,7 +134,10 @@ ${JSON.stringify(req.products)}
 icon ТОЛЬКО из allowedIcons.`;
 
   const result = await model.generateContent(
-    { contents: [{ role: "user", parts: [{ text: prompt }] }] },
+    { 
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: "application/json" }
+    },
     { signal },
   );
 

@@ -1,3 +1,4 @@
+import { useSettings } from "@/hooks/useSettings";
 import { getCurrencySymbol } from "@/lib/utils";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
@@ -40,6 +41,7 @@ function calcSetPrice(recipes: RecipeData[]) {
 }
 
 const MealPrepSetsView = ({ recipes, onSelectSet, onRerollSets, extraConstraints, onExtraConstraintsChange }: MealPrepSetsViewProps) => {
+  useSettings();
   const sets = useMemo(() => chunkIntoSets(recipes), [recipes]);
 
   return (

@@ -1,3 +1,4 @@
+import { useSettings } from "@/hooks/useSettings";
 import { getCurrencySymbol } from "@/lib/utils";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -83,6 +84,7 @@ function classifyLidlCategory(itemName: string): LidlCartCategory {
 }
 
 const ShoppingList = () => {
+  useSettings();
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
 
