@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getCurrencySymbol, getAppLanguageName } from "@/lib/utils";
 import type { RecipeData } from "@/pages/Recipes";
 
 type Mode = "fridge" | "shop";
@@ -22,7 +23,7 @@ const MODEL_NAME = "gemini-2.5-flash";
 function buildSystemPrompt(mode: Mode, products: any[] | undefined, chefWishes?: string) {
   const base =
     'Ты — шеф-повар из Мюнхена.\n' +
-    'Рассчитывай стоимость в Евро (€) для магазина Lidl.\n' +
+    `Рассчитывай стоимость в ${getCurrencySymbol()} для магазина Lidl.\n` +
     'Сет: 2 основных блюда, подходящих для контейнеров и разогрева в микроволновке, и 2 дополнительных блюда (завтраки/закуски).\n' +
     'Сделай план на неделю (Meal Prep-сет, который можно есть всю неделю).\n' +
     'Немецкий словарь (Lidl Helper): Для КАЖДОГО ингредиента в recipes.ingredients[].name используй формат: "Русское название (Немецкое название)". ' +
@@ -31,10 +32,10 @@ function buildSystemPrompt(mode: Mode, products: any[] | undefined, chefWishes?:
 
   const priceGuide =
     "\n\nЖЕСТКИЙ СПРАВОЧНИК ЦЕН (Мюнхен, Lidl, EUR):\n" +
-    "- Молоко: ~1.15€/л (то есть ~0.115€/100мл)\n" +
-    "- Яйца: 10 шт ~2.50€\n" +
-    "- Мясо/птица: ~10–15€/кг\n" +
-    "Проверяй расчёты: молоко при пересчёте на 100мл НЕ должно давать >1€.";
+    `- Молоко: ~1.15${getCurrencySymbol()}/л (то есть ~0.115${getCurrencySymbol()}/100мл)\n` +
+    `- Яйца: 10 шт ~2.50${getCurrencySymbol()}\n` +
+    `- Мясо/птица: ~10–15${getCurrencySymbol()}/кг\n` +
+    `Проверяй расчёты: молоко при пересчёте на 100мл НЕ должно давать >1${getCurrencySymbol()}.`;
 
   const wishesLower = chefWishes?.toLowerCase() || "";
   const mentionsSushi = /(суши|sushi|ролл|роллы|uramaki|maki|нигири|nigiri|темаки|temaki)/i.test(wishesLower);
@@ -186,8 +187,8 @@ function buildUserPrompt(params: GenerateParams) {
 function buildFormatPrompt(timeframe: Timeframe, mode: Mode) {
   return `
 Каждый объект рецепта (элемент массива) ДОЛЖЕН иметь поля:
-- title: string — название рецепта на русском
-- description: string — 1–2 предложения-описания по-русски
+- title: string — название рецепта на ${getAppLanguageName()}
+- description: string — 1–2 предложения-описания на ${getAppLanguageName()}
 - icon: string — один emoji
 - meal_type: string — одно из "breakfast"|"snack"|"soup"|"main" ${
     timeframe === "meal_prep" ? "(ОБЯЗАТЕЛЬНО)" : "(если подходит, иначе можно опустить или поставить общий тип)"
@@ -196,25 +197,25 @@ function buildFormatPrompt(timeframe: Timeframe, mode: Mode) {
 - cook_time_minutes: number — время готовки в минутах
 - calories_total: number — оценка суммарной калорийности для всех порций
 - ingredients: array of { name: string, quantity: number, unit: string ("шт"|"г"|"кг"|"мл"|"л"|"уп"|"ст.л"|"ч.л"), estimated_price_rub: number }
-  ВАЖНО: estimated_price_rub — это оценка цены ингредиента в евро (€) для магазина Lidl в Мюнхене.
+  ВАЖНО: estimated_price_rub — это оценка цены ингредиента в евро (${getCurrencySymbol()}) для магазина Lidl в Мюнхене.
   ingredients[].name должен быть в формате: "Русское название (Немецкое название)".
-- steps: array of strings — шаги приготовления по-русски.
+- steps: array of strings — шаги приготовления на ${getAppLanguageName()}.
 
 ОГРАНИЧЕНИЯ ПО ЦЕНАМ (LIDL MUNICH):
-- ЖЕСТКИЙ СПРАВОЧНИК ЦЕН (ориентиры по Мюнхену, Евро €):
-  * Молоко: ~1.15€/л (то есть ~0.115€/100мл)
-  * Яйца: 10 шт ~2.50€
-  * Мясо/птица: ~10-15€/кг
-- Если для молока единичная цена даёт стоимость за 100мл БОЛЬШЕ 1€ — это ошибка, скорректируй estimated_price.
-- Если итоговая цена ингредиента получается аномальной (например суп+курица > ~60€ на человека за неделю) — скорректируй количество и/или estimated_price.
-- Стоимость ОДНОГО сета Meal Prep на неделю на 1 человека в Lidl должна быть примерно 40–60€.
+- ЖЕСТКИЙ СПРАВОЧНИК ЦЕН (ориентиры по Мюнхену, Евро ${getCurrencySymbol()}):
+  * Молоко: ~1.15${getCurrencySymbol()}/л (то есть ~0.115${getCurrencySymbol()}/100мл)
+  * Яйца: 10 шт ~2.50${getCurrencySymbol()}
+  * Мясо/птица: ~10-15${getCurrencySymbol()}/кг
+- Если для молока единичная цена даёт стоимость за 100мл БОЛЬШЕ 1${getCurrencySymbol()} — это ошибка, скорректируй estimated_price.
+- Если итоговая цена ингредиента получается аномальной (например суп+курица > ~60${getCurrencySymbol()} на человека за неделю) — скорректируй количество и/или estimated_price.
+- Стоимость ОДНОГО сета Meal Prep на неделю на 1 человека в Lidl должна быть примерно 40–60${getCurrencySymbol()}.
 - Проверяй цены по здравому смыслу:
-  * курица ~7€/кг;
-  * чечевица/крупы ~2€ за пачку;
-  * овощи ~1–3€ за позицию;
-  * замороженные полуфабрикаты (пицца, лазанья) ~2–4€ за штуку.
-- Если расчёты дают сумму вроде 156€ за суп и курицу — это ошибка, нужно скорректировать количество и цены.
-- Итоговая цена одного блюда в пересчёте на порцию обычно 2–5€ и не должна сильно превышать этот диапазон.
+  * курица ~7${getCurrencySymbol()}/кг;
+  * чечевица/крупы ~2${getCurrencySymbol()} за пачку;
+  * овощи ~1–3${getCurrencySymbol()} за позицию;
+  * замороженные полуфабрикаты (пицца, лазанья) ~2–4${getCurrencySymbol()} за штуку.
+- Если расчёты дают сумму вроде 156${getCurrencySymbol()} за суп и курицу — это ошибка, нужно скорректировать количество и цены.
+- Итоговая цена одного блюда в пересчёте на порцию обычно 2–5${getCurrencySymbol()} и не должна сильно превышать этот диапазон.
 
 ПРАВИЛА ДЛЯ УЖИНА:
 - Ужин — это НЕ второй обед.
@@ -273,7 +274,7 @@ function validateAndClampLidlPrices(recipes: RecipeData[]): { recipes: RecipeDat
         warnings.push(`Clamped ingredient price for "${ing.name}" in "${recipe.title}": ${old} -> ${ing.estimated_price_rub}`);
       }
 
-      // milk stricter guard: price for 100ml must not exceed 1€
+      // milk stricter guard: price for 100ml must not exceed 1${getCurrencySymbol()}
       if (isMilk(ing.name)) {
         if (ing.unit === "мл") {
           const per100 = ing.estimated_price_rub * 100;
@@ -286,23 +287,23 @@ function validateAndClampLidlPrices(recipes: RecipeData[]): { recipes: RecipeDat
           const per100 = ing.estimated_price_rub / 10;
           if (per100 > 1) {
             const old = ing.estimated_price_rub;
-            ing.estimated_price_rub = 10; // 10€/l => 1€/100ml
+            ing.estimated_price_rub = 10; // 10${getCurrencySymbol()}/l => 1${getCurrencySymbol()}/100ml
             warnings.push(`Milk per100ml too high for "${ing.name}" in "${recipe.title}": ${old} -> ${ing.estimated_price_rub}`);
           }
         }
       }
 
-      // eggs guard: for 10 eggs total should be near 2.5€ (rough cap)
+      // eggs guard: for 10 eggs total should be near 2.5${getCurrencySymbol()} (rough cap)
       if (isEggs(ing.name) && ing.unit === "шт") {
         const total10 = ing.estimated_price_rub * 10;
         if (total10 > 5) {
           const old = ing.estimated_price_rub;
-          ing.estimated_price_rub = 0.5; // 10 eggs => 5€
+          ing.estimated_price_rub = 0.5; // 10 eggs => 5${getCurrencySymbol()}
           warnings.push(`Eggs too expensive for "${ing.name}" in "${recipe.title}": ${old} -> ${ing.estimated_price_rub}`);
         }
       }
 
-      // meat guard: 10-15€/kg with hard cap
+      // meat guard: 10-15${getCurrencySymbol()}/kg with hard cap
       if (isMeat(ing.name)) {
         if (ing.unit === "кг" && ing.estimated_price_rub > 20) {
           const old = ing.estimated_price_rub;

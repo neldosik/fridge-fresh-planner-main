@@ -133,7 +133,7 @@ const ShoppingList = () => {
   const shareToWhatsApp = () => {
     const lines: string[] = [];
     let sum = 0;
-    lines.push("Список покупок (Lidl Munich, цены в €):");
+    lines.push("Список покупок (Lidl Munich, цены в ${getCurrencySymbol()}):");
     lines.push("");
 
     for (const cat of orderedCats) {
@@ -144,13 +144,13 @@ const ShoppingList = () => {
         const unitPrice = Math.max(0, item.estimated_price || 0);
         const total = unitPrice * item.quantity;
         sum += total;
-        lines.push(`- ${item.name}: ${item.quantity} ${item.unit} (~${Math.round(total)}€)`);
+        lines.push(`- ${item.name}: ${item.quantity} ${item.unit} (~${Math.round(total)}${getCurrencySymbol()})`);
       }
       lines.push("");
     }
 
-    lines.push(`Итого: ~${Math.round(sum)}€`);
-    const text = encodeURIComponent(lines.join("\n"));
+    lines.push(`Итого: ~${Math.round(sum)}${getCurrencySymbol()}`);
+    const text = encodeURIComponent(lines.join("\nimport { getCurrencySymbol } from "@/lib/utils";\n"));
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
@@ -163,7 +163,7 @@ const ShoppingList = () => {
             <p className="text-xs text-muted-foreground">Цены Lidl Munich (EUR)</p>
           </div>
           <div className="flex items-center gap-3">
-            {totalPrice > 0 && <span className="text-sm font-bold text-primary">~{Math.round(totalPrice)}€</span>}
+            {totalPrice > 0 && <span className="text-sm font-bold text-primary">~{Math.round(totalPrice)}{getCurrencySymbol()}</span>}
             <button
               type="button"
               onClick={shareToWhatsApp}
@@ -214,7 +214,7 @@ const ShoppingList = () => {
                           <p className="text-xs text-muted-foreground">
                             {item.quantity} {item.unit}
                             {item.estimated_price && item.estimated_price > 0 && (
-                              <span className="ml-2 text-primary">~{Math.round(item.estimated_price * item.quantity)}€</span>
+                              <span className="ml-2 text-primary">~{Math.round(item.estimated_price * item.quantity)}{getCurrencySymbol()}</span>
                             )}
                           </p>
                         </div>

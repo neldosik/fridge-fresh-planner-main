@@ -210,7 +210,7 @@ const RecipeCard = ({
                           )}
                           {ing.estimated_price_rub && mode === "shop" && matched && !hasAny && ing.estimated_price_rub > 0 && (
                             <span className="ml-1 text-primary">
-                              ~{Math.round(ing.estimated_price_rub * ing.quantity * multiplier)}€
+                              ~{Math.round(ing.estimated_price_rub * ing.quantity * multiplier)}{getCurrencySymbol()}
                             </span>
                           )}
                         </span>
@@ -226,7 +226,7 @@ const RecipeCard = ({
                       {Math.round(
                         recipe.ingredients.reduce((s, i) => s + (i.estimated_price_rub || 0) * i.quantity * multiplier, 0),
                       )}
-                      €
+                      {getCurrencySymbol()}
                     </span>
                   </div>
                 )}
@@ -253,4 +253,4 @@ const RecipeCard = ({
   );
 };
 
-export default RecipeCard;
+export default RecipeCard;\nimport { getCurrencySymbol } from "@/lib/utils";

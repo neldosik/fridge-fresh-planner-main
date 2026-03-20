@@ -18,8 +18,20 @@ const Settings = () => {
   
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState("");
-  const [currency, setCurrency] = useState("EUR");
-  const [language, setLanguage] = useState("ru");
+  const [currency, setCurrency] = useState(localStorage.getItem("app_currency") || "EUR");
+  const [language, setLanguage] = useState(localStorage.getItem("app_language") || "ru");
+
+  const handleCurrencyChange = (val: string) => {
+    setCurrency(val);
+    localStorage.setItem("app_currency", val);
+    window.dispatchEvent(new Event("settingsChange"));
+  };
+
+  const handleLanguageChange = (val: string) => {
+    setLanguage(val);
+    localStorage.setItem("app_language", val);
+    window.dispatchEvent(new Event("settingsChange"));
+  };
 
   useEffect(() => {
     const getUserData = async () => {

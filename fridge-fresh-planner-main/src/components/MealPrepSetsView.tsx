@@ -110,7 +110,7 @@ const MealPrepSetsView = ({ recipes, onSelectSet, onRerollSets, extraConstraints
                     {vit}
                   </span>
                   <span className="text-sm font-bold text-primary">
-                    Примерно {totalPrice}€ в Lidl
+                    Примерно {totalPrice}{getCurrencySymbol()} 
                   </span>
                   <span className="text-[10px] text-muted-foreground">(на 7 дней для всех блюд)</span>
                 </div>
@@ -145,4 +145,4 @@ const MealPrepSetsView = ({ recipes, onSelectSet, onRerollSets, extraConstraints
 };
 
 export default MealPrepSetsView;
-
+\nimport { getCurrencySymbol } from "@/lib/utils";
