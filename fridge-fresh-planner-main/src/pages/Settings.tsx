@@ -161,6 +161,7 @@ const Settings = () => {
                 </SelectContent>
               </Select>
             </div>
+          <InstallPwaButton />
           </CardContent>
         </Card>
 

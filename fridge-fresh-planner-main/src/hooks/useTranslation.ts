@@ -542,6 +542,7 @@ export const translations = {
     set_lang_placeholder: "Sprache auswählen",
     set_currency: "Währung",
     set_currency_placeholder: "Währung auswählen",
+    set_install_app: "App installieren",
     set_logout: "Abmelden",
     set_toast_logout_err: "Fehler beim Abmelden",
     set_delete_account: "Konto dauerhaft löschen",
