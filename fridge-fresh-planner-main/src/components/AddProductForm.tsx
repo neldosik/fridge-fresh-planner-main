@@ -9,11 +9,7 @@ import ScanConfirmList, { ScannedProduct } from "./ScanConfirmList";
 import { PRODUCT_ICONS } from "@/constants/productIcons";
 import { markShoppingItemsAsBoughtByProducts } from "@/services/shoppingListSyncService";
 
-const LOCATIONS = [
-  { id: "fridge", label: "Холодильник" },
-  { id: "freezer", label: "Морозилка" },
-  { id: "shelf", label: "Полка" },
-];
+
 
 const ICONS = [...PRODUCT_ICONS];
 
@@ -26,6 +22,12 @@ interface AddProductFormProps {
 type FormView = "form" | "scanning" | "confirm";
 
 const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps) => {
+  const { t } = useTranslation();
+    const LOCATIONS = [
+    { id: "fridge", label: t("tab_fridge") },
+    { id: "freezer", label: t("tab_freezer") },
+    { id: "shelf", label: t("tab_shelf") },
+  ];
   const [name, setName] = useState("");
   const [location, setLocation] = useState(defaultLocation);
   const [quantity, setQuantity] = useState("1");

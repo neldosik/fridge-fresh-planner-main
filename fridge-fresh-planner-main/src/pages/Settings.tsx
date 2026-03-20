@@ -133,7 +133,7 @@ const Settings = () => {
                 <Globe size={14} className="text-muted-foreground" />
                 <Label>{t("set_lang")}</Label>
               </div>
-              <Select value={language} onValueChange={setLanguage}>
+              <Select value={language} onValueChange={handleLanguageChange}>
                 <SelectTrigger className="w-full bg-background">
                   <SelectValue placeholder={t("set_lang_placeholder") as string} />
                 </SelectTrigger>
@@ -150,7 +150,7 @@ const Settings = () => {
                 <Banknote size={14} className="text-muted-foreground" />
                 <Label>{t("set_currency")}</Label>
               </div>
-              <Select value={currency} onValueChange={setCurrency}>
+              <Select value={currency} onValueChange={handleCurrencyChange}>
                 <SelectTrigger className="w-full bg-background">
                   <SelectValue placeholder={t("set_currency_placeholder") as string} />
                 </SelectTrigger>

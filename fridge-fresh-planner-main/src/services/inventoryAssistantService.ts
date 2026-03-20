@@ -95,6 +95,7 @@ export async function runInventoryAssistant(
   const prompt = `Ты — ассистент управления запасами.
 Пользователь даёт команды на русском или немецком. Ты должен выполнить их над таблицей products:
 
+Текущая дата: ${new Date().toISOString().split("T")[0]}
 Текущие продукты (JSON):
 ${JSON.stringify(req.products)}
 
