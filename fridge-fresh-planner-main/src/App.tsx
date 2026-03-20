@@ -12,7 +12,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Auth from "./pages/Auth.tsx";
 import Settings from "./pages/Settings.tsx";
 import { ThemeProvider } from "./components/ThemeProvider";
-
+import { ReloadPrompt } from "./components/ReloadPrompt.tsx";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +43,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <ReloadPrompt />
           <BrowserRouter>
             <Routes>
               {/* Если сессии нет, показываем Auth, иначе редирект на главную */}

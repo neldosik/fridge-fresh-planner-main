@@ -1,23 +1,15 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { fileURLToPath } from "url";
-import { componentTagger } from "lovable-tagger";
-import { VitePWA } from "vite-plugin-pwa";
+import os
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+path = "c:\\Users\\Oleksandr\\fridge-fresh-planner-main\\fridge-fresh-planner-main\\vite.config.ts"
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
-    },
-  },
-  plugins: [
+with open(path, 'r', encoding='utf-8') as f:
+    text = f.read()
+
+if 'VitePWA' not in text:
+    text = text.replace('import { componentTagger } from "lovable-tagger";', 'import { componentTagger } from "lovable-tagger";\nimport { VitePWA } from "vite-plugin-pwa";')
+    
+    old_plugins = 'plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),'
+    new_plugins = """plugins: [
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
@@ -49,10 +41,10 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
       },
     }),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-}));
+  ].filter(Boolean),"""
+    text = text.replace(old_plugins, new_plugins)
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(text)
+
+print("vite.config.ts configured for PWA!")
