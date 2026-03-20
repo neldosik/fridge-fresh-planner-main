@@ -22,7 +22,7 @@ function convertQuantity(fromUnit: string, qty: number, toUnit: string): number 
   if (!from || !to) return null;
   if (from === to) return qty;
 
-  const mass: Record<string, "g" | "kg"> = { g: "g", кг: "kg", кг: "kg", kg: "kg", кг: "kg" } as any;
+  const mass: Record<string, "g" | "kg"> = { g: "g", кг: "kg", kg: "kg" } as any;
   const vol: Record<string, "ml" | "l"> = { мл: "ml", ml: "ml", л: "l", l: "l" } as any;
 
   const massFrom = from === "г" || from === "кг";

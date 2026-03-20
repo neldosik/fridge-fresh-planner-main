@@ -26,7 +26,7 @@ const AddProductForm = ({ open, onClose, defaultLocation }: AddProductFormProps)
     const LOCATIONS = [
     { id: "fridge", label: t("tab_fridge") },
     { id: "freezer", label: t("tab_freezer") },
-    { id: "shelf", label: t("tab_shelf") },
+    { id: "shelf", label: t("tab_pantry") },
   ];
   const [name, setName] = useState("");
   const [location, setLocation] = useState(defaultLocation);
