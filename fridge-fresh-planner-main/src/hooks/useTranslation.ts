@@ -14,7 +14,7 @@ export const translations = {
     // TabSwitcher
     tab_fridge: "Холодильник",
     tab_freezer: "Морозилка",
-    tab_shelf: "Полка",
+    tab_pantry: "Полка",
 
     // Index.tsx
     idx_title: "Продукты",
@@ -201,7 +201,7 @@ export const translations = {
     // TabSwitcher
     tab_fridge: "Fridge",
     tab_freezer: "Freezer",
-    tab_shelf: "Pantry",
+    tab_pantry: "Pantry",
 
     // Index.tsx
     idx_title: "Products",
@@ -388,7 +388,7 @@ export const translations = {
     // TabSwitcher
     tab_fridge: "Kühlschrank",
     tab_freezer: "Gefrierfach",
-    tab_shelf: "Vorrat",
+    tab_pantry: "Vorrat",
 
     // Index.tsx
     idx_title: "Produkte",

@@ -12,7 +12,7 @@ import { runInventoryAssistant } from "@/services/inventoryAssistantService";
 import { markShoppingItemsAsBoughtByProducts } from "@/services/shoppingListSyncService";
 
 const Index = () => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [activeTab, setActiveTab] = useState("fridge");
   const [formOpen, setFormOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -490,7 +490,7 @@ const Index = () => {
     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     try {
-      const res = await runInventoryAssistant({ activeLocation, products, message: text, fallbackErrorAi: t("ast_err_ai") as string, fallbackUnknown: t("ast_err_unknown") as string, fallbackNotFound: t("ast_not_found") as string }, controller.signal);
+      const res = await runInventoryAssistant({ activeLocation, products, message: text, fallbackErrorAi: t("ast_err_ai") as string, fallbackUnknown: t("ast_err_unknown") as string, fallbackNotFound: t("ast_not_found") as string, language }, controller.signal);
 
       if (res.intent === "query_remaining") {
         const productId = res.query?.productId ?? null;

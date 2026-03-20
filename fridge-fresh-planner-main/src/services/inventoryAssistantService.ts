@@ -19,6 +19,7 @@ export interface InventoryAssistantRequest {
   fallbackErrorAi?: string;
   fallbackUnknown?: string;
   fallbackNotFound?: string;
+  language?: string;
 }
 
 type InventoryAssistantAction =
@@ -96,6 +97,8 @@ export async function runInventoryAssistant(
 Пользователь даёт команды на русском или немецком. Ты должен выполнить их над таблицей products:
 
 Текущая дата: ${new Date().toISOString().split("T")[0]}
+Язык ответа: ${req.language || "ru"}
+Команда пользователя: "${req.message}"
 Текущие продукты (JSON):
 ${JSON.stringify(req.products)}
 
