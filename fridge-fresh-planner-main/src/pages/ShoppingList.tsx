@@ -1,3 +1,4 @@
+import { getCurrencySymbol } from "@/lib/utils";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -150,7 +151,7 @@ const ShoppingList = () => {
     }
 
     lines.push(`Итого: ~${Math.round(sum)}${getCurrencySymbol()}`);
-    const text = encodeURIComponent(lines.join("\nimport { getCurrencySymbol } from "@/lib/utils";\n"));
+    const text = encodeURIComponent(lines.join("\n"));
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 

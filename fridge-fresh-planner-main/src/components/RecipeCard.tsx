@@ -1,3 +1,4 @@
+import { getCurrencySymbol } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RefreshCw, ShoppingCart, CookingPot, Bookmark, ChevronDown, Clock, Flame, Users, Minus, Plus, Heart } from "lucide-react";
@@ -253,4 +254,4 @@ const RecipeCard = ({
   );
 };
 
-export default RecipeCard;\nimport { getCurrencySymbol } from "@/lib/utils";
+export default RecipeCard;

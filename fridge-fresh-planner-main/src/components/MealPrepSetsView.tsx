@@ -1,3 +1,4 @@
+import { getCurrencySymbol } from "@/lib/utils";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import type { RecipeData } from "@/pages/Recipes";
@@ -145,4 +146,4 @@ const MealPrepSetsView = ({ recipes, onSelectSet, onRerollSets, extraConstraints
 };
 
 export default MealPrepSetsView;
-\nimport { getCurrencySymbol } from "@/lib/utils";
+
