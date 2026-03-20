@@ -11,7 +11,8 @@ import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { useTheme } from "@/components/ThemeProvider";
 import { useTranslation } from "@/hooks/useTranslation"; // Используем твой хук
-import { User, Settings as SettingsIcon, Globe, Banknote, LogOut, Trash2 } from "lucide-react";
+import { User, Settings as SettingsIcon, Globe, Banknote, LogOut, Trash2, Download } from "lucide-react";
+import { InstallPwaButton } from "@/components/InstallPwaButton";
 
 const Settings = () => {
   const { t } = useTranslation();
