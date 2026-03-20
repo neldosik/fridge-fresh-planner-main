@@ -44,15 +44,17 @@ export function InstallPwaButton() {
       return;
     }
 
-    if (!deferredPrompt) {
+    const promptEvent = deferredPrompt || (window as any).deferredPWAInstallPrompt;
+    if (!promptEvent) {
       toast.info("Установка пока недоступна в этом браузере или приложение уже установлено.");
       return;
     }
 
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
     if (outcome === "accepted") {
       setDeferredPrompt(null);
+      (window as any).deferredPWAInstallPrompt = null;
     }
   };
 
