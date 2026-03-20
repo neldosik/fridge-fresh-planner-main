@@ -14,28 +14,11 @@ import Settings from "./pages/Settings.tsx";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 
-// Внутри App() оберни TooltipProvider:
-const App = () => (
-  <ThemeProvider defaultTheme="light" storageKey="fridge-theme">
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {/* ... остальной код ... */}
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
-);
-
 const queryClient = new QueryClient();
 
-const App = () => (
-  <ThemeProvider defaultTheme="light" storageKey="fridge-theme">
-    <QueryClientProvider client={queryClient}>
-      </TooltipProvider>
-        const [session, setSession] = useState<any>(null);
-        const [loading, setLoading] = useState(true);
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
+const App = () => {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Проверяем текущую сессию при загрузке
@@ -55,25 +38,27 @@ const App = () => (
   if (loading) return null; // Или экран загрузки
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Если сессии нет, показываем Auth, иначе редирект на главную */}
-            <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" />} />
-            <Route path="/settings" element={session ? <Settings /> : <Navigate to="/auth" />} />
-            {/* Защищенные роуты */}
-            <Route path="/" element={session ? <Index /> : <Navigate to="/auth" />} />
-            <Route path="/recipes" element={session ? <Recipes /> : <Navigate to="/auth" />} />
-            <Route path="/shopping" element={session ? <ShoppingList /> : <Navigate to="/auth" />} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="light" storageKey="fridge-theme">
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Если сессии нет, показываем Auth, иначе редирект на главную */}
+              <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" />} />
+              <Route path="/settings" element={session ? <Settings /> : <Navigate to="/auth" />} />
+              {/* Защищенные роуты */}
+              <Route path="/" element={session ? <Index /> : <Navigate to="/auth" />} />
+              <Route path="/recipes" element={session ? <Recipes /> : <Navigate to="/auth" />} />
+              <Route path="/shopping" element={session ? <ShoppingList /> : <Navigate to="/auth" />} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 
