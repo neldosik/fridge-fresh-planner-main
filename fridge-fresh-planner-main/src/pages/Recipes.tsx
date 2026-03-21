@@ -264,19 +264,29 @@ const Recipes = () => {
     if (timeframe === "meal_prep" || timeframe === "week") {
        const loadingToastId = toast.loading("Ищем замену (ИИ думает)...");
        try {
-         const generated = await generateRecipesWithGemini({
+         let generated = await generateRecipesWithGemini({
            mode, timeframe: "single", products: mode === "fridge" ? productsForGeneration : [],
            servings: timeframe === "meal_prep" ? 7 : 2,
            excludeRecipes: newExcluded,
-           extraConstraints: "Сгенерируй ОДНО блюдо такого же типа (завтрак/обед/ужин), как: " + oldRecipe.title,
+           extraConstraints: "Сгенерируй замену для блюда: " + oldRecipe.title + ". Сохрани тип блюда (завтрак, обед, ужин или перекус).",
            chefWishes
          }, new AbortController().signal);
          
          toast.dismiss(loadingToastId);
-         if (!generated || generated.length === 0) throw new Error("Empty Array");
+         
+         // Bulletproof parsing
+         if (generated && !Array.isArray(generated)) {
+            if ((generated as any).recipes && Array.isArray((generated as any).recipes)) {
+                generated = (generated as any).recipes;
+            } else {
+                generated = [generated] as any;
+            }
+         }
+         
+         if (!generated || generated.length === 0 || !generated[0]?.title) throw new Error("AI вернул пустой результат");
          
          const newRecipe = generated[0];
-         newRecipe.meal_type = oldRecipe.meal_type; // Force identical meal_type so it doesn't disappear from UI
+         newRecipe.meal_type = oldRecipe.meal_type || "main"; // Force identical meal_type so it doesn't disappear from UI
          if (timeframe === "meal_prep") {
             const newList = [...(mealPrepSelectedRecipes || [])];
             newList[index] = newRecipe;
