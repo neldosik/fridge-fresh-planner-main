@@ -57,11 +57,23 @@ const Index = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem("app_must_have", JSON.stringify(mustHaveList));
-  }, [mustHaveList]);
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.user_metadata?.must_have_items) {
+        setMustHaveList(data.user.user_metadata.must_have_items);
+      }
+    });
+  }, []);
 
-  const removeMustHave = (key) => {
-    setMustHaveList(prev => prev.filter(item => item.key !== key));
+  const saveMustHaveList = async (newList: any[]) => {
+    setMustHaveList(newList);
+    localStorage.setItem("app_must_have", JSON.stringify(newList));
+    await supabase.auth.updateUser({
+      data: { must_have_items: newList }
+    });
+  };
+
+  const removeMustHave = (key: string) => {
+    saveMustHaveList(mustHaveList.filter((item: any) => item.key !== key));
   };
 
   const [newMustHaveName, setNewMustHaveName] = useState("");
@@ -76,7 +88,7 @@ const Index = () => {
       unit: "шт",
       lowQty: 1,
     };
-    setMustHaveList(prev => [...prev, newItem]);
+    saveMustHaveList([...mustHaveList, newItem]);
     setNewMustHaveName("");
     setNewMustHaveIcon("🍽️");
   };

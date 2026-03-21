@@ -248,14 +248,54 @@ const Recipes = () => {
     }
   };
 
-  const handleReroll = (index: number) => {
-    const title = timeframe === "week" ? weeklyRecipes[index]?.title : recipes[index]?.title;
-    if (title) {
-      const newExcluded = [...excludedTitles, title];
-      setExcludedTitles(newExcluded);
-      // For single, regenerate all; for weekly just that slot — for simplicity regenerate all
-      generateRecipes(mode, timeframe, newExcluded);
+  const handleReroll = async (index: number) => {
+    let targetList = timeframe === "week" ? weeklyRecipes : recipes;
+    if (timeframe === "meal_prep" && selectedSetIndex !== null) {
+      targetList = mealPrepSelectedRecipes || [];
     }
+    
+    const oldRecipe = targetList[index];
+    if (!oldRecipe) return;
+
+    const title = oldRecipe.title;
+    const newExcluded = [...excludedTitles, title];
+    setExcludedTitles(newExcluded);
+
+    if (timeframe === "meal_prep" || timeframe === "week") {
+       const loadingToastId = toast.loading("Ищем замену (ИИ думает)...");
+       try {
+         const generated = await generateRecipesWithGemini({
+           mode, timeframe: "single", products: mode === "fridge" ? productsForGeneration : [],
+           servings: timeframe === "meal_prep" ? 7 : 2,
+           excludeRecipes: newExcluded,
+           extraConstraints: "Сгенерируй ОДНО блюдо такого же типа (завтрак/обед/ужин), как: " + oldRecipe.title,
+           chefWishes
+         }, new AbortController().signal);
+         
+         toast.dismiss(loadingToastId);
+         if (!generated || generated.length === 0) throw new Error("Empty Array");
+         
+         const newRecipe = generated[0];
+         if (timeframe === "meal_prep") {
+            const newList = [...(mealPrepSelectedRecipes || [])];
+            newList[index] = newRecipe;
+            setMealPrepSelectedRecipes(newList);
+            toast.success("Блюдо заменено!");
+         } else {
+            const newList = [...weeklyRecipes];
+            newList[index] = newRecipe;
+            setWeeklyRecipes(newList);
+            toast.success("Блюдо заменено!");
+         }
+         return;
+       } catch (e: any) {
+         toast.dismiss(loadingToastId);
+         toast.error(e?.message || "Ошибка при замене блюда");
+         return; // fallback to complete reroll if fails? No, just stop.
+       }
+    }
+
+    generateRecipes(mode, timeframe, newExcluded);
   };
 
   const handleAddToShoppingList = async (recipe: RecipeData) => {

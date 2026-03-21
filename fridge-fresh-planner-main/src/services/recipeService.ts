@@ -18,7 +18,7 @@ interface GenerateParams {
   chefWishes?: string;
 }
 
-const MODEL_NAME = "gemini-2.5-flash";
+const MODEL_NAME = "gemini-3-flash-preview";
 
 function buildSystemPrompt(mode: Mode, products: any[] | undefined, chefWishes?: string) {
   const base =
@@ -56,11 +56,11 @@ function buildSystemPrompt(mode: Mode, products: any[] | undefined, chefWishes?:
 
   return (
     base +
-      priceGuide +
-      "\n\nПользователь готов купить недостающее в магазине, поэтому можно предлагать любые популярные рецепты мировой кухни." +
-      (mentionsSushi
-        ? " Для суши/роллов считай базовыми: рис для суши, соевый соус, рисовый уксус, нори, имбирь, васаби, огурец. Разрешено использовать приготовленные начинки (курица/креветки/яйцо/овощи), избегай сырой рыбы."
-        : "")
+    priceGuide +
+    "\n\nПользователь готов купить недостающее в магазине, поэтому можно предлагать любые популярные рецепты мировой кухни." +
+    (mentionsSushi
+      ? " Для суши/роллов считай базовыми: рис для суши, соевый соус, рисовый уксус, нори, имбирь, васаби, огурец. Разрешено использовать приготовленные начинки (курица/креветки/яйцо/овощи), избегай сырой рыбы."
+      : "")
   );
 }
 
@@ -190,9 +190,8 @@ function buildFormatPrompt(timeframe: Timeframe, mode: Mode) {
 - title: string — название рецепта на ${getAppLanguageName()}
 - description: string — 1–2 предложения-описания на ${getAppLanguageName()}
 - icon: string — один emoji
-- meal_type: string — одно из "breakfast"|"snack"|"soup"|"main" ${
-    timeframe === "meal_prep" ? "(ОБЯЗАТЕЛЬНО)" : "(если подходит, иначе можно опустить или поставить общий тип)"
-  }
+- meal_type: string — одно из "breakfast"|"snack"|"soup"|"main" ${timeframe === "meal_prep" ? "(ОБЯЗАТЕЛЬНО)" : "(если подходит, иначе можно опустить или поставить общий тип)"
+    }
 - servings: number — количество порций
 - cook_time_minutes: number — время готовки в минутах
 - calories_total: number — оценка суммарной калорийности для всех порций
