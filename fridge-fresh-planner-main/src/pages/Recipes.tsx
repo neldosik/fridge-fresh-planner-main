@@ -276,6 +276,7 @@ const Recipes = () => {
          if (!generated || generated.length === 0) throw new Error("Empty Array");
          
          const newRecipe = generated[0];
+         newRecipe.meal_type = oldRecipe.meal_type; // Force identical meal_type so it doesn't disappear from UI
          if (timeframe === "meal_prep") {
             const newList = [...(mealPrepSelectedRecipes || [])];
             newList[index] = newRecipe;
